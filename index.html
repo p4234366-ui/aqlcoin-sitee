@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+  <meta charset="UTF-8">
+  <title>Asosiy Menyu</title>
+  <style>
+    body {
+      background-color: black;
+      color: lime;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      text-align: center;
+      padding-top: 160px;
+      margin: 0;
+    }
+
+    h1 {
+      font-size: 48px;
+      margin-bottom: 40px;
+    }
+
+    .btn {
+      display: inline-block;
+      padding: 20px 40px;
+      margin: 20px;
+      font-size: 28px;
+      background-color: #0f0;
+      color: black;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      font-weight: bold;
+      box-shadow: 0 0 15px lime;
+      transition: transform 0.3s ease, background-color 0.3s ease;
+    }
+
+    .btn:hover {
+      background-color: #6f6;
+      transform: scale(1.05);
+    }
+
+    .coin-btn {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      padding: 12px 24px;
+      font-size: 20px;
+      background-color: gold;
+      color: black;
+      border: none;
+      border-radius: 10px;
+      font-weight: bold;
+      box-shadow: 0 0 10px yellow;
+      cursor: pointer;
+      transition: transform 0.3s ease, background-color 0.3s ease;
+    }
+
+    .coin-btn:hover {
+      background-color: #ffdf00;
+      transform: scale(1.05);
+    }
+
+    .telegram-btn {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      padding: 12px 24px;
+      font-size: 18px;
+      background-color: #0088cc;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      font-weight: bold;
+      box-shadow: 0 0 10px #00acee;
+      cursor: pointer;
+      transition: transform 0.3s ease, background-color 0.3s ease;
+    }
+
+    .telegram-btn:hover {
+      background-color: #00acee;
+      transform: scale(1.05);
+    }
+
+    .main-logo {
+      position: absolute;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 200px;
+      max-width: 80%;
+    }
+
+    @keyframes fadeInScale {
+      0% {
+        opacity: 0;
+        transform: scale(0.5);
+      }
+      100% {
+        opacity: 1;
+        transform: scale(1);
+      }
+    }
+
+    .btn.animated,
+    .coin-btn.animated,
+    .telegram-btn.animated {
+      animation: fadeInScale 1s ease-in-out;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Telegram tugmasi chap tepa burchakda -->
+  <button class="telegram-btn animated" onclick="location.href='https://t.me/qiziqarli_matematik_savollar'">📢 Telegram Kanalimiz</button>
+
+  <!-- Coin chiqarish tugmasi o‘ngda -->
+  <button class="coin-btn animated" onclick="location.href='withdraw.html'">💸 Coin chiqarish</button>
+
+  <h1>🎮 Asosiy Menyu</h1>
+
+  <button class="btn animated" onclick="location.href='math-game.html'">🧠 Qiziqarli Matematik Savollar</button>
+  <button class="btn animated" onclick="location.href='aviator.html'">🎲 Qiziqarli O‘yinlar</button>
+  <button class="btn animated" onclick="location.href='Quick-think.html'">⚡ Tez Fikrlash O‘yini</button>
+  <button class="btn animated" onclick="location.href='memory-game.html'">🧩 Eslab Qolish O‘yini</button>
+
+</body>
+</html>
+

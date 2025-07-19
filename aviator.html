@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+  <meta charset="UTF-8">
+  <title>Qiziqarli o'yinlar</title>
+  <style>
+    body {
+      background-color: #000;
+      color: lime;
+      font-family: sans-serif;
+      text-align: center;
+      padding-top: 30px;
+    }
+    .game-box {
+      border: 2px solid lime;
+      margin: 20px auto;
+      width: 700px;
+      height: 300px;
+      position: relative;
+      background-color: #111;
+      box-shadow: 0 0 15px lime;
+      overflow: hidden;
+    }
+    .airplane {
+      width: 50px;
+      height: 50px;
+      position: absolute;
+      top: 130px;
+      left: 10px;
+      transition: left 0.1s linear;
+    }
+    input, button {
+      padding: 10px;
+      margin: 10px;
+      border-radius: 5px;
+      border: none;
+    }
+    button {
+      background: green;
+      color: white;
+      font-weight: bold;
+    }
+    .btn-red {
+      background: red;
+    }
+    #multiplier {
+      font-size: 24px;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+  <h2>Qiziqarli o‘yin</h2>
+  <a href="index.html"><button class="btn-red">Orqaga</button></a>
+
+  <div class="game-box" id="gameBox">
+    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/3/3a/Airplane_silhouette.png/64px-Airplane_silhouette.png"
+         class="airplane" id="airplane">
+  </div>
+
+  <div>
+    <input type="number" id="betAmount" placeholder="Tikiladigan summa">
+    <button onclick="placeBet()">Pul tikish</button>
+    <button onclick="startGame()">Start</button>
+    <button onclick="cashOut()">Cash Out</button>
+  </div>
+
+  <div id="multiplier">1.00x</div>
+  <div>Balans: <span id="balance">0</span> so'm</div>
+
+  <script>
+    let balance = parseInt(localStorage.getItem('balance')) || 0;
+    let bet = 0;
+    let currentMultiplier = 1.00;
+    let gameInterval;
+    let cashOutDone = false;
+    let planeLeft = 10;
+
+    const balanceDisplay = document.getElementById('balance');
+    const multiplierDisplay = document.getElementById('multiplier');
+    const airplane = document.getElementById('airplane');
+
+    function updateBalanceDisplay() {
+      balanceDisplay.innerText = balance;
+    }
+
+    function placeBet() {
+      const amount = parseInt(document.getElementById('betAmount').value);
+      if (amount > 0 && balance >= amount) {
+        bet = amount;
+        balance -= amount;
+        updateBalanceDisplay();
+        localStorage.setItem('balance', balance);
+        alert("Pul tikildi: " + amount + " so'm");
+      } else {
+        alert("Balans yetarli emas yoki noto‘g‘ri miqdor!");
+      }
+    }
+
+    function startGame() {
+      if (bet <= 0) {
+        alert("Avval tikish kerak!");
+        return;
+      }
+
+      currentMultiplier = 1.00;
+      cashOutDone = false;
+      planeLeft = 10;
+      airplane.style.left = planeLeft + "px";
+      clearInterval(gameInterval);
+
+      const maxMultiplier = randomMaxMultiplier();
+
+      gameInterval = setInterval(() => {
+        currentMultiplier += 0.01;
+        multiplierDisplay.innerText = currentMultiplier.toFixed(2) + "x";
+
+        planeLeft += 3;
+        airplane.style.left = planeLeft + "px";
+
+        if (currentMultiplier >= maxMultiplier) {
+          clearInterval(gameInterval);
+          if (!cashOutDone) {
+            alert("Uchib ketdi! Siz yutqazdingiz.");
+            bet = 0;
+          }
+        }
+      }, 100);
+    }
+
+    function cashOut() {
+      if (!cashOutDone && bet > 0) {
+        const win = Math.floor(bet * currentMultiplier);
+        balance += win;
+        updateBalanceDisplay();
+        localStorage.setItem('balance', balance);
+        alert("Yutdingiz! " + win + " so'm");
+        cashOutDone = true;
+        clearInterval(gameInterval);
+        bet = 0;
+      }
+    }
+
+    function randomMaxMultiplier() {
+      const r = Math.random();
+      if (r < 0.7) return 2;
+      if (r < 0.85) return 3;
+      if (r < 0.95) return 5;
+      return 10;
+    }
+
+    updateBalanceDisplay();
+  </script>
+</body>
+</html>
+
+

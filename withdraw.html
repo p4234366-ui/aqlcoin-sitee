@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+  <meta charset="UTF-8" />
+  <title>💸 Coin chiqarish</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Russo+One&display=swap');
+
+    body {
+      background-color: black;
+      color: #0f0;
+      font-family: 'Russo One', sans-serif;
+      text-align: center;
+      padding-top: 50px;
+    }
+
+    h1 {
+      font-size: 42px;
+      margin-bottom: 20px;
+    }
+
+    .info-buttons {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      margin-bottom: 30px;
+    }
+
+    .info-button {
+      background-color: #222;
+      color: gold;
+      padding: 12px 24px;
+      border: 2px solid lime;
+      border-radius: 12px;
+      font-size: 20px;
+      box-shadow: 0 0 10px #0f0;
+    }
+
+    input {
+      padding: 14px;
+      font-size: 18px;
+      margin: 10px;
+      width: 280px;
+      border-radius: 10px;
+      border: 2px solid #0f0;
+      background-color: #111;
+      color: #fff;
+      text-align: center;
+    }
+
+    button {
+      padding: 16px 36px;
+      font-size: 22px;
+      background-color: lime;
+      color: black;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      font-weight: bold;
+      box-shadow: 0 0 12px lime;
+      transition: 0.3s ease;
+    }
+
+    button:hover {
+      background-color: #6f6;
+      transform: scale(1.05);
+    }
+
+    .message {
+      margin-top: 20px;
+      font-size: 20px;
+      color: #ff0;
+    }
+
+    .history {
+      margin-top: 50px;
+    }
+
+    .history h3 {
+      font-size: 28px;
+      color: #0ff;
+      margin-bottom: 10px;
+    }
+
+    .history-table {
+      width: 95%;
+      margin: 0 auto;
+      border-collapse: collapse;
+      color: white;
+      font-size: 16px;
+    }
+
+    .history-table th,
+    .history-table td {
+      padding: 12px;
+      border: 1px solid #0f0;
+      text-align: center;
+    }
+
+    .history-table th {
+      background-color: #222;
+      color: #0f0;
+    }
+
+    .history-table tr:nth-child(even) {
+      background-color: #111;
+    }
+
+    .back-btn {
+      margin-top: 30px;
+      font-size: 20px;
+      background-color: #333;
+      color: white;
+      border: 2px solid #0f0;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>💸 Coin chiqarish</h1>
+
+  <div class="info-buttons">
+    <div class="info-button">💰 Balans: <span id="coinBalance">35</span> coin</div>
+    <div class="info-button">💱 Minimal: 3000 coin = 20 000 so‘m</div>
+  </div>
+
+  <input type="text" id="cardNumber" placeholder="💳 Karta raqamingiz" />
+  <input type="number" id="amount" placeholder="💰 Coin miqdori (min 3000)" />
+
+  <br />
+  <button onclick="withdraw()">Pulni chiqarish</button>
+
+  <div class="message" id="message"></div>
+
+  <div class="history">
+    <h3>📜 Tranzaksiya tarixi</h3>
+    <table class="history-table">
+      <thead>
+        <tr>
+          <th>💰 Coin</th>
+          <th>💵 So‘m</th>
+          <th>💳 Karta</th>
+          <th>🕒 Vaqti</th>
+          <th>📌 Holat</th>
+        </tr>
+      </thead>
+      <tbody id="transactionTable"></tbody>
+    </table>
+  </div>
+
+  <button class="back-btn" onclick="location.href='index.html'">⬅️ Asosiy menyu</button>
+
+  <script>
+    let coin = parseInt(localStorage.getItem('coin') || '35');
+    document.getElementById('coinBalance').textContent = coin;
+
+    function isValidCard(card) {
+      return /^8600\d{12}$/.test(card);
+    }
+
+    function withdraw() {
+      const card = document.getElementById('cardNumber').value.trim();
+      const amount = parseInt(document.getElementById('amount').value.trim());
+      const msg = document.getElementById('message');
+
+      if (!isValidCard(card)) {
+        msg.textContent = "❌ Noto‘g‘ri karta raqami. Faqat 8600 bilan boshlanadigan 16 raqam bo‘lishi kerak.";
+        return;
+      }
+
+      if (isNaN(amount) || amount < 3000) {
+        msg.textContent = "⚠️ Minimal chiqarish 3000 coin.";
+        return;
+      }
+
+      if (amount > coin) {
+        msg.textContent = "🚫 Mablag‘ yetarli emas.";
+        return;
+      }
+
+      coin -= amount;
+      localStorage.setItem('coin', coin);
+      document.getElementById('coinBalance').textContent = coin;
+      msg.textContent = "✅ Tranzaksiya yuborildi. 5 daqiqada holat yangilanadi.";
+
+      const now = new Date().toLocaleString('uz-UZ');
+      const newEntry = {
+        amount,
+        card,
+        time: now,
+        status: 'Jarayonda'
+      };
+
+      const history = JSON.parse(localStorage.getItem('history') || '[]');
+      history.push(newEntry);
+      localStorage.setItem('history', JSON.stringify(history));
+      renderHistory();
+
+      // Holatni 5 daqiqada yangilash
+      setTimeout(() => {
+        const updated = JSON.parse(localStorage.getItem('history'));
+        updated[updated.length - 1].status = 'Muvaffaqiyatli tushdi';
+        localStorage.setItem('history', JSON.stringify(updated));
+        renderHistory();
+      }, 5 * 60 * 1000);
+    }
+
+    function renderHistory() {
+      const table = document.getElementById('transactionTable');
+      table.innerHTML = '';
+      const history = JSON.parse(localStorage.getItem('history') || '[]');
+      history.slice().reverse().forEach(entry => {
+        const som = (entry.amount / 3000 * 20000).toLocaleString('uz-UZ');
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td>${entry.amount}</td>
+          <td>${som} so‘m</td>
+          <td>${entry.card}</td>
+          <td>${entry.time}</td>
+          <td>${entry.status === 'Jarayonda' ? '⏳ Jarayonda' : '✅ Muvaffaqiyatli tushdi'}</td>
+        `;
+        table.appendChild(row);
+      });
+    }
+
+    renderHistory();
+  </script>
+<script>
+  let balance = parseInt(localStorage.getItem('balance') || '0');
+  document.getElementById('coinBalance').textContent = balance;
+
+  function isValidCard(card) {
+    return /^8600\d{12}$/.test(card);
+  }
+
+  function withdraw() {
+    const card = document.getElementById('cardNumber').value.trim();
+    const amount = parseInt(document.getElementById('amount').value.trim());
+    const msg = document.getElementById('message');
+
+    if (!isValidCard(card)) {
+      msg.textContent = "❌ Noto‘g‘ri karta raqami. Faqat 8600 bilan boshlanadigan 16 raqam bo‘lishi kerak.";
+      return;
+    }
+
+    if (isNaN(amount) || amount < 3000) {
+      msg.textContent = "⚠️ Minimal chiqarish 3000 coin.";
+      return;
+    }
+
+    if (amount > balance) {
+      msg.textContent = "🚫 Mablag‘ yetarli emas.";
+      return;
+    }
+
+    balance -= amount;
+    localStorage.setItem('balance', balance);
+    document.getElementById('coinBalance').textContent = balance;
+    msg.textContent = "✅ Tranzaksiya yuborildi. 5 daqiqada holat yangilanadi.";
+
+    const now = new Date().toLocaleString('uz-UZ');
+    const newEntry = {
+      amount,
+      card,
+      time: now,
+      status: 'Jarayonda'
+    };
+
+    const history = JSON.parse(localStorage.getItem('history') || '[]');
+    history.push(newEntry);
+    localStorage.setItem('history', JSON.stringify(history));
+    renderHistory();
+
+    setTimeout(() => {
+      const updated = JSON.parse(localStorage.getItem('history'));
+      updated[updated.length - 1].status = 'Muvaffaqiyatli tushdi';
+      localStorage.setItem('history', JSON.stringify(updated));
+      renderHistory();
+    }, 5 * 60 * 1000);
+  }
+
+  function renderHistory() {
+    const table = document.getElementById('transactionTable');
+    table.innerHTML = '';
+    const history = JSON.parse(localStorage.getItem('history') || '[]');
+    history.slice().reverse().forEach(entry => {
+      const som = (entry.amount / 3000 * 20000).toLocaleString('uz-UZ');
+      const row = document.createElement('tr');
+      row.innerHTML = `
+        <td>${entry.amount}</td>
+        <td>${som} so‘m</td>
+        <td>${entry.card}</td>
+        <td>${entry.time}</td>
+        <td>${entry.status === 'Jarayonda' ? '⏳ Jarayonda' : '✅ Muvaffaqiyatli tushdi'}</td>
+      `;
+      table.appendChild(row);
+    });
+  }
+
+  renderHistory();
+</script>
+
+</body>
+</html>

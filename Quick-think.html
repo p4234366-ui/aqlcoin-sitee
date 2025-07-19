@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+  <meta charset="UTF-8">
+  <title>🧠 Tez Fikr Oʻyini</title>
+  <style>
+    body {
+      background-color: #000;
+      color: lime;
+      font-family: sans-serif;
+      text-align: center;
+      padding-top: 80px;
+    }
+    h1 {
+      font-size: 40px;
+      margin-bottom: 20px;
+    }
+    .question-box {
+      background-color: #111;
+      padding: 30px;
+      border-radius: 10px;
+      width: 600px;
+      margin: 0 auto;
+      box-shadow: 0 0 15px lime;
+    }
+    #question {
+      font-size: 42px;
+      margin-bottom: 20px;
+    }
+    .option-btn {
+      display: block;
+      background-color: gold;
+      color: black;
+      font-weight: bold;
+      padding: 15px;
+      margin: 15px auto;
+      border: none;
+      border-radius: 8px;
+      font-size: 24px;
+      cursor: pointer;
+      box-shadow: 0 0 10px yellow;
+      transition: transform 0.3s ease, background-color 0.3s ease;
+      width: 80%;
+    }
+    .option-btn:hover {
+      background-color: #ffdf00;
+      transform: scale(1.05);
+    }
+    #timer, #level, #balanceDisplay {
+      font-size: 22px;
+      margin: 10px;
+      display: inline-block;
+    }
+    .top-bar {
+      position: absolute;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 30px;
+      background-color: #111;
+      padding: 12px 24px;
+      border-radius: 12px;
+      box-shadow: 0 0 12px lime;
+    }
+    .back-btn {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      padding: 10px 20px;
+      font-size: 18px;
+      background-color: #333;
+      color: lime;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      box-shadow: 0 0 10px lime;
+      transition: transform 0.3s ease;
+    }
+    .back-btn:hover {
+      transform: scale(1.1);
+      background-color: #555;
+    }
+    .feedback {
+      font-size: 24px;
+      margin-top: 20px;
+      font-weight: bold;
+      animation: fadeIn 0.5s ease;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: scale(0.9); }
+      to { opacity: 1; transform: scale(1); }
+    }
+    .sticker {
+      font-size: 48px;
+      margin-top: 10px;
+      animation: fadeIn 0.5s ease;
+    }
+  </style>
+</head>
+<body>
+  <button class="back-btn" onclick="location.href='index.html'">🔙 Orqaga</button>
+  <div class="top-bar">
+    <div id="timer">⏱️ 30</div>
+    <div id="level">📶 Level: 1</div>
+    <div id="balanceDisplay">💰 Balans: 0</div>
+  </div>
+
+  <h1>🧠 Tez Fikr Oʻyini</h1>
+  <div class="question-box">
+    <div id="question">Savol yuklanmoqda...</div>
+    <button class="option-btn" onclick="checkAnswer(0)">A</button>
+    <button class="option-btn" onclick="checkAnswer(1)">B</button>
+    <button class="option-btn" onclick="checkAnswer(2)">C</button>
+    <button class="option-btn" onclick="checkAnswer(3)">D</button>
+    <div id="feedback"></div>
+  </div>
+
+  <script>
+    const questions = [
+      { q: "2 + 2 nechiga teng?", options: ["3", "4", "5", "6"], answer: 1 },
+      { q: "Poyezdda 3 ta vagon bo‘lsa, har birida 10 kishi bo‘lsa, jami nechta kishi bor?", options: ["30", "13", "33", "3"], answer: 0 },
+      { q: "Yer sayyorasining tabiiy yo‘ldoshi nima?", options: ["Quyosh", "Oy", "Yulduz", "Mars"], answer: 1 },
+      { q: "5 × 6 = ?", options: ["30", "35", "25", "60"], answer: 0 },
+      { q: "Eng katta bir xonali son?", options: ["8", "9", "10", "7"], answer: 1 },
+      { q: "12 oyda nechta hafta bor taxminan?", options: ["48", "52", "54", "60"], answer: 1 },
+      { q: "Quyosh qayerdan chiqadi?", options: ["G‘arb", "Shimol", "Sharq", "Janub"], answer: 2 },
+      { q: "Kompyuterning bosh qismi nima?", options: ["Sichqoncha", "Monitor", "Sistemali blok", "Klaviatura"], answer: 2 },
+      { q: "100 ning 10% nechiga teng?", options: ["10", "1", "90", "1000"], answer: 0 },
+      { q: "Birinchi O‘zbek kosmonavti kim?", options: ["Amir Temur", "Ulug‘bek", "Muhammad Al-Xorazmiy", "Salizhan Sharipov"], answer: 3 },
+      // 90 ta shunga o‘xshash savolni istasangiz davom ettiraman
+    ];
+
+    while (questions.length < 100) {
+      questions.push({
+        q: `Dummy savol #${questions.length + 1}. Qaysi to‘g‘ri?`,
+        options: ["A", "B", "C", "D"],
+        answer: Math.floor(Math.random() * 4)
+      });
+    }
+
+    let current = 0;
+    let score = parseInt(localStorage.getItem('balance')) || 0;
+    let level = 1;
+    let time = 30;
+    let timer;
+
+    function updateUI() {
+      document.getElementById("question").innerText = questions[current].q;
+      const opts = document.querySelectorAll(".option-btn");
+      opts.forEach((btn, i) => {
+        btn.innerText = questions[current].options[i];
+      });
+      document.getElementById("level").innerText = `📶 Level: ${level}`;
+      document.getElementById("balanceDisplay").innerText = `💰 Balans: ${score}`;
+      document.getElementById("feedback").innerHTML = "";
+      resetTimer();
+    }
+
+    function resetTimer() {
+      time = 30;
+      document.getElementById("timer").innerText = `⏱️ ${time}`;
+      clearInterval(timer);
+      timer = setInterval(() => {
+        time--;
+        document.getElementById("timer").innerText = `⏱️ ${time}`;
+        if (time <= 0) {
+          clearInterval(timer);
+          nextQuestion();
+        }
+      }, 1000);
+    }
+
+    function checkAnswer(choice) {
+      clearInterval(timer);
+      const feedback = document.getElementById("feedback");
+      if (choice === questions[current].answer) {
+        score += 5;
+        level++;
+        localStorage.setItem('balance', score);
+        feedback.innerHTML = '<div class="feedback">✅ To\'g\'ri javob! <span class="sticker">🎉</span><br>+5 coin</div>';
+      } else {
+        feedback.innerHTML = '<div class="feedback">❌ Noto\'g\'ri javob! <span class="sticker">😭</span></div>';
+      }
+      setTimeout(() => nextQuestion(), 2000);
+    }
+
+    function nextQuestion() {
+      current++;
+      if (current >= questions.length) {
+        current = 0;
+        level = 1;
+      }
+      updateUI();
+    }
+
+    updateUI();
+  </script>
+</body>
+</html>

@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+  <meta charset="UTF-8">
+  <title>Qiziqarli Matematik Savollar</title>
+  <style>
+    body {
+      background-color: #000;
+      color: lime;
+      font-family: sans-serif;
+      text-align: center;
+      padding-top: 50px;
+    }
+    .question-box, .balance-box {
+      background: #111;
+      padding: 20px;
+      margin: 20px auto;
+      border-radius: 10px;
+      width: 400px;
+      box-shadow: 0 0 15px lime;
+      font-size: 32px;
+    }
+    input, button {
+      padding: 10px;
+      margin: 10px;
+      border: none;
+      border-radius: 5px;
+      font-size: 20px;
+    }
+    input {
+      width: 100px;
+    }
+    button {
+      background-color: #0f0;
+      color: black;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    .message {
+      font-size: 24px;
+      margin-top: 10px;
+      height: 30px;
+    }
+    .back-btn {
+      margin-top: 30px;
+      padding: 10px 20px;
+      background-color: green;
+      color: white;
+      font-size: 20px;
+      border: none;
+      border-radius: 8px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    .level-box {
+      font-size: 26px;
+      color: yellow;
+      margin-bottom: 10px;
+    }
+    .timer {
+      font-size: 28px;
+      color: cyan;
+      margin: 10px 0;
+    }
+    .balance {
+      background-color: #111;
+      color: lime;
+      padding: 15px;
+      border-radius: 10px;
+      display: inline-block;
+      margin-top: 10px;
+      box-shadow: 0 0 10px lime;
+      font-size: 28px;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Qiziqarli Matematik Savollar</h1>
+
+  <div class="balance-box">
+    <div class="level-box">🎮 Daraja: <span id="level">1</span></div>
+    <div class="balance">💰 Balans: <span id="balance">0</span> coin</div>
+  </div>
+
+  <div class="question-box">
+    <div id="question">Savol: </div>
+    <div class="timer">⏱ <span id="timer">15</span> soniya</div>
+    <input type="number" id="answer" placeholder="Javobni yozing"><br>
+    <button onclick="checkAnswer()">Yuborish</button>
+    <div class="message" id="message"></div>
+  </div>
+
+  <button class="back-btn" onclick="goBack()">⬅️ Orqaga</button>
+
+  <audio id="correct-sound" src="ding.mp3"></audio>
+  <audio id="wrong-sound" src="wrong.mp3"></audio>
+
+  <script>
+    let number1, number2, correctAnswer;
+    let score = 0;
+    let level = 1;
+    let timer;
+    let timeLeft = 15;
+
+    function getMaxByLevel(lvl) {
+      if (lvl === 1) return 20;
+      if (lvl === 2) return 100;
+      if (lvl === 3) return 500;
+      return 1000 + (lvl - 4) * 2000;
+    }
+
+    function generateQuestion() {
+      const max = getMaxByLevel(level);
+      const type = Math.random() < 0.5 ? 'add' : 'sub';
+      number1 = Math.floor(Math.random() * max);
+      number2 = Math.floor(Math.random() * max);
+
+      if (type === 'add') {
+        correctAnswer = number1 + number2;
+        document.getElementById('question').innerText = `Savol: ${number1} + ${number2} = ?`;
+      } else {
+        if (number2 > number1) [number1, number2] = [number2, number1];
+        correctAnswer = number1 - number2;
+        document.getElementById('question').innerText = `Savol: ${number1} - ${number2} = ?`;
+      }
+
+      document.getElementById('answer').value = "";
+      document.getElementById('message').innerText = "";
+      resetTimer();
+    }
+
+    function resetTimer() {
+      clearInterval(timer);
+      timeLeft = 15;
+      document.getElementById('timer').innerText = timeLeft;
+      timer = setInterval(() => {
+        timeLeft--;
+        document.getElementById('timer').innerText = timeLeft;
+        if (timeLeft <= 0) {
+          clearInterval(timer);
+          document.getElementById('message').innerText = "⏰ Vaqt tugadi!";
+          document.getElementById('message').style.color = "orange";
+          playWrongSound();
+          setTimeout(generateQuestion, 2000);
+        }
+      }, 1000);
+    }
+
+    function increaseLevelIfNeeded() {
+      score++;
+      if (score % 3 === 0) {
+        level++;
+        document.getElementById("level").innerText = level;
+      }
+    }
+
+    function getBalance() {
+      return parseInt(localStorage.getItem('balance')) || 0;
+    }
+
+    function updateBalanceDisplay() {
+      document.getElementById('balance').innerText = getBalance();
+    }
+
+    function addToBalance(amount) {
+      let current = getBalance();
+      localStorage.setItem('balance', current + amount);
+      updateBalanceDisplay();
+    }
+
+    function playCorrectSound() {
+      const audio = document.getElementById('correct-sound');
+      audio.currentTime = 0;
+      audio.play();
+    }
+
+    function playWrongSound() {
+      const audio = document.getElementById('wrong-sound');
+      audio.currentTime = 0;
+      audio.play();
+    }
+
+    function checkAnswer() {
+      clearInterval(timer);
+      const userAnswer = parseInt(document.getElementById('answer').value);
+      const messageEl = document.getElementById('message');
+
+      if (userAnswer === correctAnswer) {
+        messageEl.innerText = "✅ Siz to‘g‘ri javob berdingiz! +5 coin";
+        messageEl.style.color = "lime";
+        addToBalance(5);
+        increaseLevelIfNeeded();
+        playCorrectSound();
+      } else {
+        messageEl.innerText = "❌ Siz noto‘g‘ri javob berdingiz!";
+        messageEl.style.color = "red";
+        playWrongSound();
+      }
+
+      setTimeout(generateQuestion, 2000);
+    }
+
+    function goBack() {
+      window.location.href = "index.html";
+    }
+
+    // Boshlanishda:
+    generateQuestion();
+    updateBalanceDisplay();
+  </script>
+
+</body>
+</html>
